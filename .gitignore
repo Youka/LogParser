@@ -1,0 +1,11 @@
+# IntelliJ project
+/.idea/
+/*.iml
+# IntelliJ output
+/out/
+
+# Maven output
+/target/
+
+# Test output
+/test/logparser_results/

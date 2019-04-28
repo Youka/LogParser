@@ -1,0 +1,7 @@
+WARN: Something happened.
+[28.12.2018 11:07 pm] Exception: 'MyApp' error
+	at Kitchen
+	at Home
+Caused by: NullPointerException
+	at World
+WARN: Same happened again!

@@ -1,0 +1,8 @@
+[01.01.1970 05:21 pm] NullPointerException: 'bar' failed
+	at Somewhere
+[01.01.1970 05:22 pm] NullPointerException: 'bar' failed
+	at Somewhere
+INFO: Hello.
+
+[01.01.1970 05:38 pm] IOException: 'bar' failed again
+	at Somewhere else

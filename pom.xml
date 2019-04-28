@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Artifact information -->
+    <groupId>io.youka</groupId>
+    <artifactId>logparser</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <!-- Project information -->
+    <name>LogParser</name>
+    <description>Parser of log files by configuration.</description>
+    <inceptionYear>2019</inceptionYear>
+    <organization>
+        <name>Youka Software</name>
+        <url>https://youka.io</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>Christoph 'Youka' Spanknebel</name>
+            <email>help@youka.io</email>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>Apache 2.0</name>
+            <url>https://choosealicense.com/licenses/apache-2.0/</url>
+        </license>
+    </licenses>
+
+    <!-- Build properties -->
+    <properties>
+        <!-- Configure all plugins to work with UTF8 encoding -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Target JVM version -->
+        <jvm.version>1.8</jvm.version>
+        <!-- General kotlin version for plugins & dependencies -->
+        <kotlin.version>1.3.31</kotlin.version>
+        <!-- Set kotlin compiler coding rules -->
+        <kotlin.code.style>official</kotlin.code.style>
+        <!-- Class for program entry (hint: class files without fitting internal class get 'Kt' appended) -->
+        <main.class>io.youka.logparser.MainKt</main.class>
+    </properties>
+
+    <!-- Project dependencies -->
+    <dependencies>
+        <!-- MAIN -->
+        <!-- Kotlin standard library -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <!-- Kotlin CLI parser -->
+        <dependency>
+            <groupId>com.github.ajalt</groupId>
+            <artifactId>clikt</artifactId>
+            <version>1.7.0</version>
+        </dependency>
+        <!-- TEST -->
+        <!-- Kotlin testing framework / JUnit wrapper -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test-junit</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Base testing framework from Java world -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- Additional plugin repositories -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>springio-plugins-release</id>
+            <url>http://repo.spring.io/plugins-release/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <!-- Build process definition -->
+    <build>
+        <!-- Switch sources directories from default Java to Kotlin -->
+        <sourceDirectory>src/main/kotlin</sourceDirectory>
+        <testSourceDirectory>src/test/kotlin</testSourceDirectory>
+        <!-- Insert maven properties into specific kotlin resource (override default behaviour) -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>project.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>project.properties</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <!-- Configure phases by plugins -->
+        <plugins>
+            <!-- Kotlin compiler -->
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
+                <configuration>
+                    <jvmTarget>${jvm.version}</jvmTarget>
+                </configuration>
+                <!-- Inject himself into Java compile phases -->
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Kotlin documentation -->
+            <plugin>
+                <groupId>org.jetbrains.dokka</groupId>
+                <artifactId>dokka-maven-plugin</artifactId>
+                <version>0.9.17</version>
+                <executions>
+                    <execution>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>dokka</goal>
+                        </goals>
+                        <!-- https://github.com/Kotlin/dokka#using-the-maven-plugin -->
+                        <configuration>
+                            <outputDir>${project.build.directory}/doc</outputDir>
+                            <includes>
+                                <include>assets/packages-doc.md</include>
+                            </includes>
+                            <reportNotDocumented>false</reportNotDocumented>
+                            <skipDeprecated>true</skipDeprecated>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- Build profiles -->
+    <profiles>
+        <!-- Windows-only -->
+        <profile>
+            <id>Windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Package with dependencies + assign main class (=Fat-JAR) -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>3.2.1</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <minimizeJar>true</minimizeJar>
+                                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                                    <transformers>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                            <manifestEntries>
+                                                <!-- Program entry -->
+                                                <Main-Class>${main.class}</Main-Class>
+                                                <!-- Vendor information -->
+                                                <Name>${project.name}</Name>
+                                                <Implementation-Title>${project.name}</Implementation-Title>
+                                                <Implementation-Version>${project.version}</Implementation-Version>
+                                                <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
+                                                <!-- Additional information -->
+                                                <Build-Number>${maven.build.timestamp}</Build-Number>
+                                            </manifestEntries>
+                                        </transformer>
+                                    </transformers>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Create EXE by Fat-JAR -->
+                    <plugin>
+                        <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                        <artifactId>launch4j-maven-plugin</artifactId>
+                        <version>1.7.24</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>launch4j</goal>
+                                </goals>
+                                <!-- http://launch4j.sourceforge.net/docs.html#Configuration_file -->
+                                <configuration>
+                                    <headerType>console</headerType>
+                                    <outfile>target\${project.name}.exe</outfile>
+                                    <errTitle>${project.name}</errTitle>
+                                    <icon>assets\exe.ico</icon>
+                                    <classPath>
+                                        <mainClass>${main.class}</mainClass>
+                                    </classPath>
+                                    <jre>
+                                        <minVersion>${jvm.version}</minVersion>
+                                    </jre>
+                                    <versionInfo>
+                                        <fileVersion>${project.version}.0</fileVersion>
+                                        <txtFileVersion>${project.version}.0</txtFileVersion>
+                                        <productVersion>${project.version}.0</productVersion>
+                                        <txtProductVersion>${project.version}.0</txtProductVersion>
+                                        <productName>${project.name}</productName>
+                                        <internalName>${project.name}</internalName>
+                                        <originalFilename>${project.name}.exe</originalFilename>
+                                        <fileDescription>${project.description}</fileDescription>
+                                        <companyName>${project.organization.name}</companyName>
+                                        <copyright>(c) ${project.organization.name}, ${project.inceptionYear}</copyright>
+                                        <language>ENGLISH_US</language>
+                                    </versionInfo>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- Unix-only -->
+        <profile>
+            <id>Unix</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Create application structure by JARs -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>appassembler-maven-plugin</artifactId>
+                        <version>2.0.0</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>assemble</goal>
+                                </goals>
+                                <!-- http://www.mojohaus.org/appassembler/appassembler-maven-plugin/assemble-mojo.html -->
+                                <configuration>
+                                    <platforms>
+                                        <platform>unix</platform>
+                                    </platforms>
+                                    <assembleDirectory>${project.build.directory}/application</assembleDirectory>
+                                    <repositoryLayout>flat</repositoryLayout>
+                                    <repositoryName>lib</repositoryName>
+                                    <programs>
+                                        <program>
+                                            <id>${project.name}</id>
+                                            <mainClass>${main.class}</mainClass>
+                                        </program>
+                                    </programs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

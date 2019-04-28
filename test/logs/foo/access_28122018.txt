@@ -1,0 +1,4 @@
+[28.12.2018 09:44 pm] /GET from 192.168.0.10
+[28.12.2018 09:45 pm] RuntimeException: internal server error
+	at Root
+[28.12.2018 11:07 pm] /POST from 192.168.0.12
